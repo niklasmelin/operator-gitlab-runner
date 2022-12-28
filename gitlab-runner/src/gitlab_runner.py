@@ -48,7 +48,7 @@ def check_mandatory_config_values(charm) -> bool:
 
 
 def check_docker_tmpfs_config(charm) -> bool:
-    if charm.config['docker-tmpfs'] is not '':
+    if charm.config['docker-tmpfs'] != '':
         try:
             a, b = charm.config['docker-tmpfs'].split(':')
         except ValueError:
@@ -92,7 +92,7 @@ def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
         target = Path('/tmp/runner-template-config.toml')
         ctx = {'dockerimage': charm.config['docker-image']}
         # If tmpfs was defined for Docker executor, render required config.
-        if charm.config['docker-tmpfs'] is not '':
+        if charm.config['docker-tmpfs'] != '':
             docker_tmpfs_path, docker_tmpfs_config = charm.config['docker-tmpfs'].split(':')
             ctx['docker_tmpfs_path'] = docker_tmpfs_path
             ctx['docker_tmpfs_config'] = docker_tmpfs_config
@@ -184,7 +184,7 @@ def get_token() -> str:
         try:
             data = toml.load(f)
             return data['runners'][0]['token'][0:8]
-        except(KeyError) as e:
+        except KeyError as e:
             return str(e)
 
 
