@@ -111,7 +111,7 @@ class GitlabRunnerCharm(CharmBase):
             gitlab_runner.install_docker_executor()
         else:
             logger.error(f"Unsupported executor {e} configured, bailing out.")
-            raise
+            self.unit.status = BlockedStatus("Docker exec tmpfs config incorrect")
 
         v = gitlab_runner.get_gitlab_runner_version()
         self._stored.executor = e
@@ -122,6 +122,10 @@ class GitlabRunnerCharm(CharmBase):
         if not gitlab_runner.check_mandatory_config_values(self):
             logger.error("Missing mandatory configs. Bailing.")
             self.unit.status = BlockedStatus("Missing mandatory config.")
+
+        if not gitlab_runner.check_docker_tmpfs_config(self):
+            logger.error("Configuration for Docker executor tmpfs config is incorrect. Bailing out!")
+            self.unit.status = BlockedStatus("Docker exec tmpfs config incorrect")
 
         if not gitlab_runner.gitlab_runner_registered_already():
             logger.info("Registering")

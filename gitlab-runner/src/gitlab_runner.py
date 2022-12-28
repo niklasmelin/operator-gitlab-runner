@@ -39,7 +39,7 @@ def get_gitlab_runner_version():
     return re.search('Version:(.*)', r.stdout).group(1).lstrip()
 
 
-def check_mandatory_config_values(charm):
+def check_mandatory_config_values(charm) -> bool:
     nonempty = []
     nonempty.append(charm.config['gitlab-registration-token'])
     nonempty.append(charm.config['gitlab-server'])
@@ -47,36 +47,60 @@ def check_mandatory_config_values(charm):
     return all(nonempty)
 
 
-def gitlab_runner_registered_already():
+def check_docker_tmpfs_config(charm) -> bool:
+    if charm.config['docker-tmpfs'] is not '':
+        try:
+            a, b = charm.config['docker-tmpfs'].split(':')
+        except ValueError:
+            return False
+    return True
+
+
+def gitlab_runner_registered_already() -> bool:
     hostname_fqdn = socket.getfqdn()
     cp = subprocess.run(("gitlab-runner verify -n " + hostname_fqdn).split())
     return cp.returncode == 0
 
 
-def register_docker(charm, https_proxy=None, http_proxy=None):
+def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
 
-    # Render #1 - global config
-    templates_path = Path('templates/etc/gitlab-runner/')
-    template = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(templates_path)
-    ).get_template('config.toml')
-    target = Path('/etc/gitlab-runner/config.toml')
-    ctx = {'concurrent': charm.config['concurrent'],
-           'checkinterval': charm.config['check-interval'],
-           'sentrydsn': charm.config['sentry-dsn'],
-           'loglevel': charm.config['log-level'],
-           'logformat': charm.config['log-format']}
-    target.write_text(template.render(ctx))
+    try:
+        # Render #1 - global config
+        templates_path = Path('templates/etc/gitlab-runner/')
+        template = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(templates_path)
+        ).get_template('config.toml')
+        target = Path('/etc/gitlab-runner/config.toml')
+        ctx = {'concurrent': charm.config['concurrent'],
+               'checkinterval': charm.config['check-interval'],
+               'sentrydsn': charm.config['sentry-dsn'],
+               'loglevel': charm.config['log-level'],
+               'logformat': charm.config['log-format']}
+        target.write_text(template.render(ctx))
+    except jinja2.TemplateError as e:
+        logging.error('ERROR: Template config.toml could not be rendered\n'
+                      f'\tProblem: {e}')
+        return False
 
-    # Render #2 - runner template.
-    # render-docker-runner-template
-    templates_path = Path('templates/runner-templates/')
-    template = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(templates_path)
-    ).get_template('docker-1.template')
-    target = Path('/tmp/runner-template-config.toml')
-    ctx = {'dockerimage': charm.config['docker-image']}
-    target.write_text(template.render(ctx))
+    try:
+        # Render #2 - runner template.
+        # render-docker-runner-template
+        templates_path = Path('templates/runner-templates/')
+        template = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(templates_path)
+        ).get_template('docker-1.template')
+        target = Path('/tmp/runner-template-config.toml')
+        ctx = {'dockerimage': charm.config['docker-image']}
+        # If tmpfs was defined for Docker executor, render required config.
+        if charm.config['docker-tmpfs'] is not '':
+            docker_tmpfs_path, docker_tmpfs_config = charm.config['docker-tmpfs'].split(':')
+            ctx['docker_tmpfs_path'] = docker_tmpfs_path
+            ctx['docker_tmpfs_config'] = docker_tmpfs_config
+        target.write_text(template.render(ctx))
+    except jinja2.TemplateError as e:
+        logging.error('ERROR: Template docker-1.template could not be rendered\n'
+                      f'\tProblem: {e}')
+        return False
 
     hostname_fqdn = socket.getfqdn()
     gitlabserver = charm.config['gitlab-server']
@@ -108,7 +132,7 @@ def register_docker(charm, https_proxy=None, http_proxy=None):
     return cp.returncode == 0
 
 
-def register_lxd(charm, https_proxy=None, http_proxy=None):
+def register_lxd(charm, https_proxy=None, http_proxy=None) -> bool:
     hostname_fqdn = socket.getfqdn()
     gitlabserver = charm.config['gitlab-server']
     gitlabregistrationtoken = charm.config['gitlab-registration-token']
@@ -152,7 +176,7 @@ def register_lxd(charm, https_proxy=None, http_proxy=None):
     return cp.returncode == 0
 
 
-def get_token():
+def get_token() -> str:
     """
     Returns: The 8 first chars of the token
     """
@@ -164,7 +188,7 @@ def get_token():
             return str(e)
 
 
-def unregister():
+def unregister() -> bool:
     hostname_fqdn = socket.getfqdn()
     cmd = f"gitlab-runner unregister -n {hostname_fqdn} --all-runners"
     cp = subprocess.run(cmd.split())
