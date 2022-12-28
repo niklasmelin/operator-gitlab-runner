@@ -184,7 +184,7 @@ class GitlabRunnerCharm(CharmBase):
                 self._stored.registered = True
                 logger.info("Ready (Registered)")
             else:
-                logger.error("Failed in registration of runner. Bailing out.")
+                logger.error("Failed in registration of docker runner. Bailing out.")
                 self._stored.registered = False
 
         elif self._stored.executor == 'lxd':
@@ -192,7 +192,7 @@ class GitlabRunnerCharm(CharmBase):
                 self._stored.registered = True
                 logger.info("Ready (Registered)")
             else:
-                logger.error("Failed in registration of runner. Bailing out.")
+                logger.error("Failed in registration of lxd runner. Bailing out.")
                 self._stored.registered = False
         else:
             logger.error("Unsupported runner class. Bailing out")
