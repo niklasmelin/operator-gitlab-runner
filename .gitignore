@@ -2,6 +2,7 @@
 gitlab-runner/build/
 gitlab-runner.charm
 *.pyc
+*.charm
 *~
 *build*
 .tox/
