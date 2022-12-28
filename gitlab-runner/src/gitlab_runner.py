@@ -137,6 +137,7 @@ def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
 
     cp = subprocess.run(cmd.split())
     logging.debug(cp.stdout)
+    logging.debug(f'Registration of Docker executor finished with exit code: {cp.returncode}')
     return cp.returncode == 0
 
 

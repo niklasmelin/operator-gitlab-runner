@@ -178,13 +178,13 @@ class GitlabRunnerCharm(CharmBase):
 
     def register(self):
         # Pdb self.framework.breakpoint("register")
-        logger.info(self._stored.executor)
+        logger.info(f"Register gitlab runner with executor: {self._stored.executor}")
         if self._stored.executor == 'docker':
             if gitlab_runner.register_docker(self, http_proxy=None, https_proxy=None):
                 self._stored.registered = True
                 logger.info("Ready (Registered)")
             else:
-                logger.error("Failed in registration of docker runner. Bailing out.")
+                logger.error("Failed in registration of Docker runner. Bailing out.")
                 self._stored.registered = False
 
         elif self._stored.executor == 'lxd':
