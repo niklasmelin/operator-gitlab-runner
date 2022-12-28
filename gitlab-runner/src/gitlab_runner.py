@@ -78,7 +78,7 @@ def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
                'logformat': charm.config['log-format']}
         target.write_text(template.render(ctx))
     except jinja2.exceptions.TemplateSyntaxError as e:
-        logging.error('ERROR: Template docker-1.template could not be rendered due to syntax error\n'
+        logging.error('ERROR: Template config.toml could not be rendered due to syntax error\n'
                       f'\tProblem: {e}')
         return False
     except jinja2.TemplateError as e:

@@ -7,3 +7,4 @@ gitlab-runner.charm
 *build*
 .tox/
 /gitlab-runner/venv/
+gitlab-config.yaml
