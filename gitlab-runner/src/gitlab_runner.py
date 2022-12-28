@@ -91,7 +91,8 @@ def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
         # render-docker-runner-template
         templates_path = Path('templates/runner-templates/')
         template = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(templates_path)
+            loader=jinja2.FileSystemLoader(templates_path,),
+            undefined=jinja2.StrictUndefined
         ).get_template('docker-1.template')
         target = Path('/tmp/runner-template-config.toml')
         ctx = {'docker_image': charm.config['docker-image']}
@@ -101,6 +102,9 @@ def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
             ctx['docker_tmpfs_path'] = docker_tmpfs_path
             ctx['docker_tmpfs_config'] = docker_tmpfs_config
         target.write_text(template.render(ctx))
+    except jinja2.exceptions.TemplateNotFound as e:
+        logging.error("ERROR: Template docker-1.template could not be found.")
+        return False
     except jinja2.exceptions.TemplateSyntaxError as e:
         logging.error('ERROR: Template docker-1.template could not be rendered due to syntax error\n'
                       f'\tProblem: {e}')
@@ -141,8 +145,8 @@ def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
         Skipping tag-list.')
 
     logging.info("Executing registration call for gitlab-runner with Docker executor")
+    process = subprocess.Popen(cmd)
     try:
-        process = subprocess.Popen(cmd)
         std_out, std_err = process.communicate(timeout=30)
         if std_out:
             logging.info(std_out)
