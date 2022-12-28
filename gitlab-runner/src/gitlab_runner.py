@@ -94,7 +94,7 @@ def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
             loader=jinja2.FileSystemLoader(templates_path)
         ).get_template('docker-1.template')
         target = Path('/tmp/runner-template-config.toml')
-        ctx = {'dockerimage': charm.config['docker-image']}
+        ctx = {'docker_image': charm.config['docker-image']}
         # If tmpfs was defined for Docker executor, render required config.
         if charm.config['docker-tmpfs'] != '':
             docker_tmpfs_path, docker_tmpfs_config = charm.config['docker-tmpfs'].split(':')
@@ -111,34 +111,50 @@ def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
         return False
 
     hostname_fqdn = socket.getfqdn()
-    gitlabserver = charm.config['gitlab-server']
-    gitlabregistrationtoken = charm.config['gitlab-registration-token']
-    taglist = charm.config['tag-list']
+    gitlab_server = charm.config['gitlab-server']
+    gitlab_registration_token = charm.config['gitlab-registration-token']
+    tag_list = charm.config['tag-list']
     concurrent = charm.config['concurrent']
-    dockerimage = charm.config['docker-image']
+    # Defined in docker-1.template
+    # docker_image = charm.config['docker-image']
     run_untagged = charm.config['run-untagged']
     locked = charm.config['locked']
     proxyenv = ""
 
-    cmd = f"gitlab-runner register \
-    --non-interactive \
-    --config /etc/gitlab-runner/config.toml \
-    --template-config /tmp/runner-template-config.toml \
-    --name {hostname_fqdn} \
-    --url {gitlabserver} \
-    --registration-token {gitlabregistrationtoken} \
-    --tag-list {taglist} \
-    --request-concurrency {concurrent} \
-    --run-untagged={run_untagged} \
-    --locked={locked} \
-    --executor docker \
-    --docker-image {dockerimage} \
-    {proxyenv}"
+    cmd = ["gitlab-runner", "register",
+           "--non-interactive",
+           "--config", "/etc/gitlab-runner/config.toml",
+           "--template-config", "/tmp/runner-template-config.toml",
+           "--name", f"{hostname_fqdn}",
+           "--url", f"{gitlab_server}",
+           "--registration-token", f"{gitlab_registration_token}",
+           "--request-concurrency", f"{concurrent}",
+           f"--run-untagged={run_untagged}",
+           f"--locked={locked}",
+           "--executor", "docker",
+           f"{proxyenv}"]
 
-    cp = subprocess.run(cmd.split())
-    logging.debug(cp.stdout)
-    logging.debug(f'Registration of Docker executor finished with exit code: {cp.returncode}')
-    return cp.returncode == 0
+    if not run_untagged and tag_list != "":
+        cmd.extend(["--tag-list", "{tag-list}"])
+    if run_untagged and tag_list != "":
+        logging.warning('Conflicting configuration, run-untagged=True and tag_list are mutually exclusive. \
+        Skipping tag-list.')
+
+    logging.info("Executing registration call for gitlab-runner with Docker executor")
+    try:
+        process = subprocess.Popen(cmd)
+        std_out, std_err = process.communicate(timeout=30)
+        if std_out:
+            logging.info(std_out)
+        if std_err:
+            logging.error(std_err)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        logging.error('Registration of gitlab-runner timed out and failed')
+        return False
+
+    logging.info(f'Registration of Docker executor finished with exit code: {process.returncode}')
+    return process.returncode == 0
 
 
 def register_lxd(charm, https_proxy=None, http_proxy=None) -> bool:
