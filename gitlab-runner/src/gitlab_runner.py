@@ -75,22 +75,23 @@ def _render_runner_templates(charm) -> bool:
                 undefined=jinja2.StrictUndefined
             ).get_template(_template_filename)
             # Redner template
-            rendered_target_path.write_text(template.render(_keywords))
+            rendered_template = template.render(_keywords)
+            rendered_target_path.write_text(rendered_template)
 
             return True
         except jinja2.exceptions.TemplateNotFound:
-            logging.error(f"ERROR: Template {_template_filename} could not be found.")
+            logging.error(f"Template {_template_filename} could not be found.")
             return False
         except jinja2.exceptions.TemplateSyntaxError as e:
-            logging.error(f'ERROR: Template {_template_filename} could not be rendered due to syntax error\n'
+            logging.error(f'Template {_template_filename} could not be rendered due to syntax error\n'
                           f'\tProblem: {e}')
             return False
         except jinja2.exceptions.UndefinedError as e:
-            logging.error(f'ERROR: Template {_template_filename} could not be rendered due to syntax error\n'
+            logging.error(f'Template {_template_filename} could not be rendered due to syntax error\n'
                           f'\tProblem: {e}')
             return False
         except jinja2.TemplateError as e:
-            logging.error(f'ERROR: Template {template_filename} could not be rendered\n'
+            logging.error(f'Template {template_filename} could not be rendered\n'
                           f'\tProblem: {e}')
             return False
 
