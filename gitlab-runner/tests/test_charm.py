@@ -5,9 +5,16 @@
 import pathlib
 import sys
 import unittest
-# from unittest.mock import Mock
+from unittest.mock import Mock
+from unittest.mock import patch
+
 # from ops.model import ActiveStatus
+
+import ops.testing
 from ops.testing import Harness
+
+# Set testing environmental variable
+ops.testing.SIMULATE_CAN_CONNECT = True
 
 # Get paths
 current_path = pathlib.Path.cwd()
@@ -21,6 +28,7 @@ print(f"Current path: {current_path.as_posix()}\n"
 sys.path.append(src_path.as_posix())
 try:
     from charm import GitlabRunnerCharm
+    from gitlab_runner import get_token
 except ImportError:
     print("ERROR: Import of charm.GitlabRunnerCharm failed!")
     raise
@@ -33,4 +41,24 @@ class TestCharm(unittest.TestCase):
         self.addCleanup(self.harness.cleanup)
         self.harness.begin()
 
-    def unit_test_01_templates_runner_templates(self):
+    @patch('subprocess.Popen')
+    @patch('subprocess.run')
+    @patch('gitlab_runner.get_token')
+    def test_01_config_changed(self, mock_subprocess_popen, mock_subprocess_run, mock_get_token):
+        # Mock return code from processes
+        mock_subprocess_popen.return_value.returncode = 0
+        mock_subprocess_run.return_value.returncode = 0
+        mock_get_token.gitlab.runner.get_token = 'ABCDEFGH'
+
+        harness = Harness(GitlabRunnerCharm)
+        self.addCleanup(harness.cleanup)
+        harness.begin()
+        # self.assertEqual(list(harness.charm._stored.executor), [])
+        harness.update_config({"gitlab-registration-token": "abc",
+                               "gitlab-server": "https://gitlab.com",
+                               "executor": "docker"})
+        print(harness.charm.unit.status)
+        self.assertEqual(harness.charm.config["executor"], "docker2", msg='Executor not as configured')
+
+    def test_20_templates_runner_templates(self):
+        assert True
