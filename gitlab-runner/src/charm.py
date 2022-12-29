@@ -61,7 +61,7 @@ class GitlabRunnerCharm(CharmBase):
         action_bindings = {
             self.on.register_action: self._on_register_action,
             self.on.unregister_action: self._on_unregister_action,
-            self.on.upgraderunner_action: self._on_upgrade_runner_action
+            self.on.upgrade_action: self._on_upgrade_action
         }
 
         # Observe events and actions
@@ -201,7 +201,7 @@ class GitlabRunnerCharm(CharmBase):
 
         return self._stored.registered
 
-    def _on_upgrade_runner_action(self, event):
+    def _on_upgrade_action(self, event):
 
         logging.info("Executing upgrade of gitlab-runner with Docker executor")
 
