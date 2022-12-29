@@ -102,7 +102,7 @@ def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
             ctx['docker_tmpfs_path'] = docker_tmpfs_path
             ctx['docker_tmpfs_config'] = docker_tmpfs_config
         target.write_text(template.render(ctx))
-    except jinja2.exceptions.TemplateNotFound as e:
+    except jinja2.exceptions.TemplateNotFound:
         logging.error("ERROR: Template docker-1.template could not be found.")
         return False
     except jinja2.exceptions.TemplateSyntaxError as e:
