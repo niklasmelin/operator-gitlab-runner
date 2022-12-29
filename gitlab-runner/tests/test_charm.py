@@ -34,3 +34,4 @@ class TestCharm(unittest.TestCase):
         self.harness.begin()
 
     def unit_test_01_templates_runner_templates(self):
+        pass
