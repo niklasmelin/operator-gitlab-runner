@@ -5,10 +5,7 @@
 import pathlib
 import sys
 import unittest
-from unittest.mock import MagicMock
 from unittest.mock import patch
-
-# from ops.model import ActiveStatus
 
 import ops.testing
 from ops.testing import Harness
@@ -28,7 +25,7 @@ print(f"Current path: {current_path.as_posix()}\n"
 sys.path.append(src_path.as_posix())
 try:
     from charm import GitlabRunnerCharm
-    from gitlab_runner import get_token, register_docker
+    from gitlab_runner import register_docker
 except ImportError:
     print("ERROR: Import of charm.GitlabRunnerCharm failed!")
     raise
