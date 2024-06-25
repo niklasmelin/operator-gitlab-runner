@@ -8,7 +8,14 @@ options:
   gitlab-registration-token:
     type: string
     default: ""
-    description: "MANDATORY: registration token. Get it from you gitlab project."
+    description: "Deprecated: registration token. Get it from you gitlab project."
+
+  gitlab_authentication_token:
+    type: string
+    default: ""
+    description: | 
+      "MANDATORY: Runner authentication token. Get it from you gitlab instance, group or project starting.
+      Runner authentication tokens have the prefix 'glrt-' for the token"
 
   gitlab-server:
     type: string

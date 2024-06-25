@@ -54,7 +54,7 @@ gitlab-runner:
 Then deploy with your config and some instance constraints.
 
 ```bash
-  juju deploy --constraints="mem=4G cores=2" ./builds/gitlab-runner --config runner-config.yaml
+  juju deploy --constraints="mem=4G cores=2 root-disk=20G" ./builds/gitlab-runner --config runner-config.yaml
 ```
 Scale up your deployment with 'juju add-unit' and you will get an identical new instance. serving your pipeline:
 ```bash
@@ -70,31 +70,38 @@ Scale down with 'juju remove-unit' (will also unregister the instance in gitlab)
 
 Create two files with your separate configurations.
 
-runner-config-one.yaml
+Configuration for runner to process jobs with the specified tags  
+Filename: runner-config-one.yaml
 ```yaml
 gitlab-runner-one:
   gitlab-server: "https://gitlab.example.com"
   gitlab-registration-token: rXwQugergrzxzz32Fw3-44
   tag-list: "juju,docker,master"
-  run-untagged: true
+  run-untagged: false
 ```
 
-runner-config-two.yaml
+Configuration for runner to process jobs with-out a tag  
+Filename: runner-config-two.yaml
 ```yaml
 gitlab-runner-two:
   gitlab-server: "https://gitlab.example.com"
   gitlab-registration-token: tXwQuDAVmzxzzTtw2-ZL
-  tag-list: "juju,docker,daily"
+  tag-list: ""
   run-untagged: true
 ```
 
-Deploy the same charm, using two differnt configs and different constraints.
+Deploy the same charm, using two different configs and different constraints either from your built charm or from charm store.
 
+From local charm:
 ```bash
-  juju deploy --constraints="mem=4G cores=2" ./builds/gitlab-runner gitlab-runner-one --config runner-config-one.yaml
-  juju deploy --constraints="mem=2G cores=1" ./builds/gitlab-runner gitlab-runner-two --config runner-config-two.yaml
+  juju deploy ./builds/gitlab-runner --constraints="mem=8G cores=2 root-disk=24G"  gitlab-runner-one --config runner-config-one.yaml
+  juju deploy ./builds/gitlab-runner --constraints="mem=2G cores=1" gitlab-runner-two --config runner-config-two.yaml
 ```
-
+From charm store:
+```bash
+  juju deploy gitlab-runner --constraints="mem=8G cores=2 root-disk=24G" gitlab-runner-one --config runner-config-one.yaml
+  juju deploy gitlab-runner  --constraints="mem=2G cores=1" ./builds/gitlab-runner gitlab-runner-two --config runner-config-two.yaml
+```
 # Example deploy, relate to prometheus for monitoring
 
 With any of the other examples, add in a prometheus instance:

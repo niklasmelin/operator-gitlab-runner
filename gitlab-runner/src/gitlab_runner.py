@@ -143,20 +143,23 @@ def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
 
     hostname_fqdn = socket.getfqdn()
     gitlab_server = charm.config['gitlab-server']
-    gitlab_registration_token = charm.config['gitlab-registration-token']
+    # gitlab_registration_token = charm.config['gitlab-registration-token']
+    gitlab_authentication_token = charm.config['gitlab_authentication_token']
     tag_list = charm.config['tag-list']
     concurrent = charm.config['concurrent']
     run_untagged = charm.config['run-untagged']
     locked = charm.config['locked']
     proxyenv = ""
 
-    cmd = ["gitlab-runner", "register",
+    cmd = ["gitlab-runner",
+           "register",
            "--non-interactive",
            "--config", "/etc/gitlab-runner/config.toml",
            "--template-config", "/tmp/runner-template-config.toml",
            "--name", f"{hostname_fqdn}",
            "--url", f"{gitlab_server}",
-           "--registration-token", f"{gitlab_registration_token}",
+           # "--registration-token", f"{gitlab_registration_token}",
+           "--token", f"{gitlab_authentication_token}"
            "--request-concurrency", f"{concurrent}",
            f"--run-untagged={run_untagged}",
            f"--locked={locked}",
