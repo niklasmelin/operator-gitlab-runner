@@ -22,7 +22,7 @@ Some actions are available to help register/unregister plus some more.
 
 The following configurations are mandatory:
 
-* **gitlab-registration-token** : Get this from your gitlab repo under "Settings -> CI/CD".
+* **gitlab-authentication-token** : Get this from your gitlab instance, group or repo under "Settings -> CI/CD".
 * **gitlab-server** : The URL address to your gitlab server used to perform the gitlab-runner registration.
 
 ## LXD runners
@@ -46,7 +46,7 @@ Create a file with your configuration: runner-config.yaml:
 ```yaml
 gitlab-runner:
   gitlab-server: "https://gitlab.example.com"
-  gitlab-registration-token: tXwQuDAVmzxzzTtw2-ZL
+  gitlab-authentication-token: glrt-tXwQuDAVmzxzzTtw2-ZL
   tag-list: "juju,docker,master"
   run-untagged: true
 ```
@@ -75,7 +75,7 @@ Filename: runner-config-one.yaml
 ```yaml
 gitlab-runner-one:
   gitlab-server: "https://gitlab.example.com"
-  gitlab-registration-token: rXwQugergrzxzz32Fw3-44
+  gitlab-authentication-token: glrt-rXwQugergrzxzz32Fw3-44
   tag-list: "juju,docker,master"
   run-untagged: false
 ```
@@ -85,7 +85,7 @@ Filename: runner-config-two.yaml
 ```yaml
 gitlab-runner-two:
   gitlab-server: "https://gitlab.example.com"
-  gitlab-registration-token: tXwQuDAVmzxzzTtw2-ZL
+  gitlab-authentication-token: glrt-tXwQuDAVmzxzzTtw2-ZL
   tag-list: ""
   run-untagged: true
 ```

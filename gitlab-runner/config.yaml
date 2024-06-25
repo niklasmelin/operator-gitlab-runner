@@ -5,12 +5,7 @@
 # See: https://docs.gitlab.com/runner/configuration/advanced-configuration.html
 
 options:
-  gitlab-registration-token:
-    type: string
-    default: ""
-    description: "Deprecated: registration token. Get it from you gitlab project."
-
-  gitlab_authentication_token:
+  gitlab-authentication-token:
     type: string
     default: ""
     description: | 
