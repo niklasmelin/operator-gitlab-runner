@@ -25,9 +25,9 @@ options:
 
   docker-image:
     type: string
-    default: "docker:latest"
+    default: "python:3.11-slim"
     description: |
-      "Deployment only config. The docker image to use for docker runners."
+      "Default docker image if not specified in pipe-line. Must be a valid image"
 
   docker-in-docker:
     type: boolean
@@ -42,19 +42,19 @@ options:
       "MANDATORY: Can be: docker or lxd. Determines if this runner 
        uses a lxd or docker executor. E.g. select [docker | lxd]"
 
-  docker_pull_policy:
+  docker-pull-policy:
     type: string
     default: "always"
     description: |
       "For docker executors the pull behavior can be modified. Defaults to always pull image regardless if available or not.
       Available options: "always", "never", "if-not-present"
 
-  https_proxy:
+  https-proxy:
     type: string
     default: ""
     description: "A https proxy url E.g. https://proxy.example.com:8080/"
 
-  http_proxy:
+  http-proxy:
     type: string
     default: ""
     description: "A http proxy url E.g. http://proxy.example.com:8080/"

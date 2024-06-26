@@ -101,7 +101,7 @@ def _render_runner_templates(charm) -> bool:
         rendered_target_path = Path('/tmp/runner-template-config.toml')
 
         keywords_to_render = {'docker_image': charm.config['docker-image'],
-                              'docker_pull_policy': charm.config['docker_pull_policy']}
+                              'docker_pull_policy': charm.config['docker-pull-policy']}
         # If tmpfs was defined for Docker executor, render required config.
         if charm.config['docker-tmpfs'] != '':
             docker_tmpfs_path, docker_tmpfs_config = charm.config['docker-tmpfs'].split(':')
