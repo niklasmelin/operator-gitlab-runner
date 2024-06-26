@@ -42,7 +42,7 @@ def get_gitlab_runner_version():
 
 def check_mandatory_config_values(charm) -> bool:
     nonempty = list()
-    nonempty.append(charm.config['gitlab-registration-token'])
+    nonempty.append(charm.config['gitlab-authentication-token'])
     nonempty.append(charm.config['gitlab-server'])
     nonempty.append(charm.config['executor'])
     return all(nonempty)
