@@ -23,46 +23,6 @@ options:
     description: |
       "Architecture of the gitlab runner debian package to download"
 
-  check-interval:
-    type: int
-    default: 3
-    description: |
-      "Seconds a runner waits between checks for each executor. 
-      If set to 0 or lower, the default value is used (3)."
-
-  sentry-dsn:
-    type: boolean
-    default: true
-    description: |
-      "Enables tracking of all system level errors to Sentry."
-
-  locked:
-    type: boolean
-    default: true
-    description: |
-      "Locks the runner to the current project, defaults to true."
-
-  concurrent:
-    type: int
-    default: 1
-    description: |
-       "Number of concurrent jobs for a runner. 
-       Limits how many jobs can run concurrently. 
-       The maximum number is all defined runners. 
-       0 does not mean unlimited."
-
-  log-level:
-     type: string
-     default: "error"
-     description: |
-       "Allowed values are debug, info, warn, error, fatal, panic"
-
-  log-format:
-     type: string
-     default: "runner"
-     description: |
-       "Specifies the log format. Options are runner, text, and json."
-
   docker-image:
     type: string
     default: "docker:latest"
@@ -82,15 +42,12 @@ options:
       "MANDATORY: Can be: docker or lxd. Determines if this runner 
        uses a lxd or docker executor. E.g. select [docker | lxd]"
 
-  tag-list:
+  docker_pull_policy:
     type: string
-    default: ""
-    description: "Deployment only config. Comma separated Tag list for this runner. E.g. juju,docker"
-
-  run-untagged:
-    type: boolean
-    default: false
-    description: "Makes the runner units digest untagged jobs or not."
+    default: "always"
+    description: |
+      "For docker executors the pull behavior can be modified. Defaults to always pull image regardless if available or not.
+      Available options: "always", "never", "if-not-present"
 
   https_proxy:
     type: string

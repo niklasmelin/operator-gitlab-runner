@@ -95,28 +95,13 @@ def _render_runner_templates(charm) -> bool:
                           f'\tProblem: {e}')
             return False
 
-    # Render #1 - global runner config
-    template_path = Path('templates/etc/gitlab-runner/')
-    template_filename = 'config.toml'
-    rendered_target_path = Path('/etc/gitlab-runner/config.toml')
-    keywords_to_render = {'concurrent': charm.config['concurrent'],
-                          'checkinterval': charm.config['check-interval'],
-                          'sentrydsn': charm.config['sentry-dsn'],
-                          'loglevel': charm.config['log-level'],
-                          'logformat': charm.config['log-format']}
-    if not _render_templates(template_path,
-                             template_filename,
-                             rendered_target_path,
-                             keywords_to_render):
-        return False
-
     if charm.config['executor'] == 'docker':
-        # Render #2 - runner template.
         template_path = Path('templates/runner-templates/')
         template_filename = 'docker-1.template'
         rendered_target_path = Path('/tmp/runner-template-config.toml')
 
-        keywords_to_render = {'docker_image': charm.config['docker-image']}
+        keywords_to_render = {'docker_image': charm.config['docker-image'],
+                              'docker_pull_policy': charm.config['docker_pull_policy']}
         # If tmpfs was defined for Docker executor, render required config.
         if charm.config['docker-tmpfs'] != '':
             docker_tmpfs_path, docker_tmpfs_config = charm.config['docker-tmpfs'].split(':')
@@ -141,28 +126,14 @@ def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
     if not _render_runner_templates(charm):
         return False
 
-    hostname_fqdn = socket.getfqdn()
     gitlab_server = charm.config['gitlab-server']
     gitlab_authentication_token = charm.config['gitlab-authentication-token']
-    tag_list = charm.config['tag-list']
-    concurrent = charm.config['concurrent']
-    run_untagged = charm.config['run-untagged']
-    locked = charm.config['locked']
-    proxyenv = ""
+    proxyenv = dict()
 
-    cmd = ["gitlab-runner",
-           "register",
-           "--non-interactive",
-           "--config", "/etc/gitlab-runner/config.toml",
-           "--template-config", "/tmp/runner-template-config.toml",
-           "--name", f"{hostname_fqdn}",
-           "--url", f"{gitlab_server}",
-           "--token", f"{gitlab_authentication_token}"
-           "--request-concurrency", f"{concurrent}",
-           f"--run-untagged={run_untagged}",
-           f"--locked={locked}",
-           "--executor", "docker",
-           f"{proxyenv}"]
+    if https_proxy:
+        proxyenv['https_proxy'] = https_proxy
+    if http_proxy:
+        proxyenv['http_proxy'] = http_proxy
 
     cmd = ["gitlab-runner",
            "register",
@@ -171,14 +142,9 @@ def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
            "--url", f"{gitlab_server}",
            "--token", f"{gitlab_authentication_token}"]
 
-    if not run_untagged and tag_list != "":
-        cmd.extend(["--tag-list", "{tag-list}"])
-    if run_untagged and tag_list != "":
-        logging.warning('Conflicting configuration, run-untagged=True and tag_list are mutually exclusive. \
-        Skipping tag-list.')
-
     logging.info("Executing registration call for gitlab-runner with Docker executor")
-    process = subprocess.Popen(cmd)
+    process = subprocess.Popen(cmd,
+                               env=proxyenv)
     try:
         std_out, std_err = process.communicate(timeout=30)
         if std_out:
