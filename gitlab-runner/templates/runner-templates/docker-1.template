@@ -31,6 +31,6 @@
     # Allow for change of docker image pull policy. Defaults behavior is to always pull instead of reuse.
     {% if pull_policy is defined -%}
     pull_policy = "{{pull_policy}}"
-       {% else %}
-    pull_policy = always
+    {% else %}
+    pull_policy = "always"
     {% endif %}
