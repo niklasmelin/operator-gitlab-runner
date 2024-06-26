@@ -140,7 +140,8 @@ def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
            "--non-interactive",
            "--executor", "docker",
            "--url", f"{gitlab_server}",
-           "--token", f"{gitlab_authentication_token}"]
+           "--token", f"{gitlab_authentication_token}",
+           "--template-config", "/tmp/runner-template-config.toml"]
 
     logging.info("Executing registration call for gitlab-runner with Docker executor")
     process = subprocess.Popen(cmd,
