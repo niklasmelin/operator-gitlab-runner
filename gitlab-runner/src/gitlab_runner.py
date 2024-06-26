@@ -164,6 +164,13 @@ def register_docker(charm, https_proxy=None, http_proxy=None) -> bool:
            "--executor", "docker",
            f"{proxyenv}"]
 
+    cmd = ["gitlab-runner",
+           "register",
+           "--non-interactive",
+           "--executor", "docker",
+           "--url", f"{gitlab_server}",
+           "--token", f"{gitlab_authentication_token}"]
+
     if not run_untagged and tag_list != "":
         cmd.extend(["--tag-list", "{tag-list}"])
     if run_untagged and tag_list != "":
