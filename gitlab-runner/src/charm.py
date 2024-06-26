@@ -106,18 +106,18 @@ class GitlabRunnerCharm(CharmBase):
         subprocess.run(['systemctl', 'restart', 'gitlab-runner.service'])
 
         # Stage 4 - determine lxd/docker type executor
-        e = self.config["executor"]
-        if e == 'lxd':
+        executor_type = self.config["executor"]
+        if executor_type == 'lxd':
             gitlab_runner.install_lxd_executor()
-        elif e == 'docker':
+        elif executor_type == 'docker':
             gitlab_runner.install_docker_executor()
         else:
-            logger.error(f"Unsupported executor {e} configured, bailing out.")
+            logger.error(f"Unsupported executor {executor_type} configured, bailing out.")
             self.unit.status = BlockedStatus("Docker exec tmpfs config incorrect")
 
-        v = gitlab_runner.get_gitlab_runner_version()
-        self._stored.executor = e
-        self.unit.set_workload_version(v)
+        runner_version = gitlab_runner.get_gitlab_runner_version()
+        self._stored.executor = executor_type
+        self.unit.set_workload_version(runner_version)
         logger.debug("Completed install hook.")
 
     def _on_config_changed(self, _):
